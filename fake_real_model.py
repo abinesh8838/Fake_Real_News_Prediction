@@ -18,32 +18,36 @@ df.head()
 
 df.isnull().sum()
 
+df.rename(columns={"label": "Target"}, inplace=True)
+
 from sklearn.model_selection import train_test_split
 
-x = df.drop("label", axis = 1)
-y = df["label"]
+x = df.drop("Target", axis = 1)
+y = df["Target"]
 
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, random_state = 42)
 
-from sklearn.feature_extraction.text import TfidfVectorizer
-vectorizer = TfidfVectorizer()
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler(with_mean=False)
 
-x_train = vectorizer.fit_transform(x_train['Text'])
-x_test = vectorizer.transform(x_test['Text'])
+x_train = scaler.fit_transform(x_train)
+x_test = scaler.transform(x_test)
 
 from sklearn.linear_model import LogisticRegression
 model = LogisticRegression()
 model.fit(x_train, y_train)
 
-from sklearn.metrics import accuracy_score, classification_report
-
 y_pred = model.predict(x_test)
+
+from sklearn.metrics import accuracy_score, classification_report
 
 accuracy = accuracy_score(y_test, y_pred)
 print("Accuracy:", accuracy)
 
+print(classification_report(y_test, y_pred))
+
 pickle.dump(model, open("model.pkl", "wb"))
-pickle.dump(vectorizer, open("vectorizer.pkl", "wb"))
+pickle.dump(scaler, open("scaler.pkl", "wb"))
 
 
 
