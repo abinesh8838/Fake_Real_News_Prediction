@@ -1,17 +1,24 @@
 import streamlit as st
 import pickle
+import numpy as np
 
 model = pickle.load(open("model.pkl", "rb"))
-vectorizer = pickle.load(open("vectorizer.pkl", "rb"))
+scaler = pickle.load(open("scaler.pkl", "rb"))
 
-st.title("Fake News Detection App")
+st.title("Fake vs Real Prediction App")
 
-user_input = st.text_area("Enter News Text")
+# Example input fields
+feature1 = st.number_input("Enter Feature 1")
+feature2 = st.number_input("Enter Feature 2")
 
 if st.button("Predict"):
     
-    input_data = vectorizer.transform([user_input])
+    input_data = np.array([[feature1, feature2]])
+    input_data = scaler.transform(input_data)
+    
     prediction = model.predict(input_data)
     
-    st.subheader("Prediction:")
-    st.write(prediction[0])
+    if prediction[0] == 1:
+        st.success("Real")
+    else:
+        st.error("Fake")
