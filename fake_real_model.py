@@ -7,47 +7,47 @@ Original file is located at
     https://colab.research.google.com/drive/1ZBZsISEUwPGWOJ3VW2zPbwi2-f8xEqmV
 """
 
-import numpy as np
+# pip install pandas scikit-learn numpy
+
 import pandas as pd
 import pickle
 
-df = pd.read_csv("/content/Fake_Real_Data.csv")
-df.shape
-
-df.head()
-
-df.isnull().sum()
-
-df.rename(columns={"label": "Target"}, inplace=True)
-
 from sklearn.model_selection import train_test_split
-
-x = df.drop("Target", axis = 1)
-y = df["Target"]
-
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, random_state = 42)
-
-from sklearn.preprocessing import StandardScaler
-scaler = StandardScaler(with_mean=False)
-
-x_train = scaler.fit_transform(x_train)
-x_test = scaler.transform(x_test)
-
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-model = LogisticRegression()
-model.fit(x_train, y_train)
-
-y_pred = model.predict(x_test)
-
 from sklearn.metrics import accuracy_score, classification_report
 
-accuracy = accuracy_score(y_test, y_pred)
-print("Accuracy:", accuracy)
+# 1️⃣ Load Dataset
+df = pd.read_csv("Fake_Real_Data.csv")
 
+# 2️⃣ Define Features and Target
+df.rename(columns={"label": "Target"}, inplace=True)
+X = df["Text"]
+y = df["Target"]
+
+# 3️⃣ Split Data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# 4️⃣ Convert Text → Numbers (TF-IDF)
+vectorizer = TfidfVectorizer(stop_words='english')
+
+X_train = vectorizer.fit_transform(X_train)
+X_test = vectorizer.transform(X_test)
+
+# 5️⃣ Train Model
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train, y_train)
+
+# 6️⃣ Evaluate
+y_pred = model.predict(X_test)
+
+print("Accuracy:", accuracy_score(y_test, y_pred))
 print(classification_report(y_test, y_pred))
 
+# 7️⃣ Save Model & Vectorizer
 pickle.dump(model, open("model.pkl", "wb"))
-pickle.dump(scaler, open("scaler.pkl", "wb"))
+pickle.dump(vectorizer, open("vectorizer.pkl", "wb"))
 
-
-
+print("Model and Vectorizer saved successfully!")
